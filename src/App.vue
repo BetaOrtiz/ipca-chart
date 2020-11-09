@@ -26,16 +26,15 @@
         </div>
       </div>
     </div>
-    <div class="container">
-      <div class="content">
-        <router-view
-          :ipcaData="ipcaData"
-          :mesesDisponiveis="mesesDisponiveis"
-          :variaveis="variaveis"
-          :groups="groups"
-          :selectedDate="selectedDate"
-        />
-      </div>
+
+    <div class="content">
+      <router-view
+        :ipcaData="ipcaData"
+        :mesesDisponiveis="mesesDisponiveis"
+        :variaveis="variaveis"
+        :groups="groups"
+        :selectedDate="selectedDate"
+      />
     </div>
   </v-app>
 </template>
