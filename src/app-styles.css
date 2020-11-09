@@ -57,7 +57,7 @@ h2 {
 .content {
   position: absolute;
   width: 75vw;
-  top: 60%;
+  top: 80vh;
   left: 0;
   right: 0;
   margin: auto;
@@ -106,6 +106,7 @@ h2 {
   background-color: var(--orange);
   width: 25vw;
   min-width: 15rem;
+  min-height: 5rem;
   height: 7.5vw;
   margin-top: 20px;
   padding: 8px 12px;
