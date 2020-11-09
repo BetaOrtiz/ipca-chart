@@ -1,0 +1,38 @@
+h1,
+h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 4rem;
+  color: #fff;
+}
+
+h2 {
+  font-weight: 300;
+  font-size: 1.5rem;
+}
+
+flex {
+  display: flex;
+}
+
+column {
+  flex-direction: column;
+}
+
+orange {
+  background-color: #f57600;
+}
+
+green {
+  background-color: green;
+}
+
+blue {
+  background-color: #005079;
+}
+
+:root {
+  --orange: #f57600;
+  --green: #1c8538;
+  --blue: #005079;
+}
