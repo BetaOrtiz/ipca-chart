@@ -6,7 +6,7 @@
           :items="mesesDisponiveis"
           filled
           label="Selecione mês inicial"
-          v-model="periodSelected.initial"
+          v-model="periodSelected.monthInitial"
         ></v-select>
       </div>
 
@@ -15,12 +15,12 @@
           :items="possibleFinalMonths"
           filled
           label="Selecione mês final"
-          v-model="periodSelected.final"
+          v-model="periodSelected.monthFinal"
         ></v-select>
       </div>
     </div>
 
-    <v-radio-group v-model="radioButtonSelected" row>
+    <v-radio-group v-model="variationSelected" row>
       <v-radio
         v-for="variavel in variaveis"
         :key="variavel"
@@ -38,13 +38,15 @@
       ></v-select>
     </div>
 
-    <button @click="getPeriodData" class="btn">
-      PESQUISAR
-    </button>
+    <a href="#data"
+      ><button @click="getPeriodData" class="btn" id="data">
+        PESQUISAR
+      </button></a
+    >
 
-    <div id="titleChart" v-if="showChart">
+    <div id="chart">
       <strong>
-        {{ radioButtonSelected }}
+        {{ variationSelected }}
       </strong>
       <p>
         {{ periodSelected.monthInitial }} -
@@ -55,8 +57,6 @@
     <!-- </div> -->
 
     <apexchart
-      v-if="showChart"
-      id="chart"
       width="100%"
       type="line"
       :options="options"
@@ -75,9 +75,14 @@ export default {
     apexchart: VueApexCharts,
   },
   props: ['ipcaData', 'mesesDisponiveis', 'variaveis', 'groups'],
+  created() {
+    this.periodSelected.monthInitial = this.mesesDisponiveis[1];
+    this.periodSelected.monthFinal = this.mesesDisponiveis[0];
+    this.getPeriodData();
+  },
   data() {
     return {
-      radioButtonSelected: null,
+      variationSelected: 'IPCA - Variação mensal',
       options: {
         chart: {
           id: 'vuechart-example',
@@ -98,19 +103,16 @@ export default {
         monthInitial: '',
         monthFinal: '',
       },
-      showChart: false,
-      selectedGroup: '',
+      selectedGroup: 'Índice geral',
     };
   },
   computed: {
     possibleFinalMonths: function() {
-      if (this.periodSelected.initial) {
+      if (this.periodSelected.monthInitial) {
         const i = this.mesesDisponiveis.indexOf(
-          this.periodSelected.initial,
+          this.periodSelected.monthInitial,
         );
-
         const finalMonths = this.mesesDisponiveis.slice(0, i);
-
         return finalMonths;
       } else {
         return this.mesesDisponiveis;
@@ -124,31 +126,26 @@ export default {
       }
     },
     getPeriodData: function() {
-      this.verifyBlankFields();
-
-      const monthInitial = this.periodSelected.initial;
-      const monthFinal = this.periodSelected.final;
-
       console.log(this.periodSelected);
 
       const filteredByVariation = this.ipcaData.filter(
-        item => item.D2N === this.radioButtonSelected,
+        item => item.D2N === this.variationSelected,
       );
 
       const firstIndex = filteredByVariation.find(
         item =>
-          item.D3N === this.periodSelected.initial.toLowerCase(),
+          item.D3N === this.periodSelected.monthInitial.toLowerCase(),
       );
 
       const secondIndex = filteredByVariation.find(
-        item => item.D3N === this.periodSelected.final.toLowerCase(),
+        item =>
+          item.D3N === this.periodSelected.monthFinal.toLowerCase(),
       );
 
       this.periodSelected = {
+        ...this.periodSelected,
         initial: this.ipcaData.indexOf(firstIndex),
         final: this.ipcaData.indexOf(secondIndex),
-        monthInitial,
-        monthFinal,
       };
 
       const dataPeriod = this.ipcaData.slice(
@@ -178,8 +175,6 @@ export default {
           data: dataToPlot,
         },
       ];
-
-      this.showChart = true;
     },
   },
 };
