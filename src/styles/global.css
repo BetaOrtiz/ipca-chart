@@ -1,5 +1,7 @@
-html {
+html,
+body {
   scroll-behavior: smooth;
+  font-family: 'Montserrat', sans-serif;
 }
 h1 {
   font-family: 'Montserrat', sans-serif;
@@ -41,4 +43,11 @@ h3 {
   --blue-hover: #005079;
   --blue-caixa: #1c60ab;
   --blue: #18579b;
+}
+
+a,
+a:link,
+a:visited a:active {
+  color: #fff;
+  text-decoration: none;
 }

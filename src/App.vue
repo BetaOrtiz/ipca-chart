@@ -1,25 +1,18 @@
 <template>
   <v-app>
-    <div class="top-bar">
-      <div class="logo">
-        <router-link to="/">
-          <img src="./assets/cef_neg.png" alt="Caixa Econômica" />
-        </router-link>
-      </div>
-    </div>
-
-    <header>
+    <TopBar />
+    <header id="header">
       <div class="elements">
         <div class="left-content">
           <h1>IPCA</h1>
           <h2>Consulta Histórico</h2>
           <nav class="column">
-            <router-link to="/">
+            <!-- <router-link to="/">
               <button
                 :class="
                   this.$router.history.current.path === '/chart'
                     ? 'main-buttons'
-                    : 'main-buttons disabled'
+                    : 'main-buttons disabled after'
                 "
                 :disabled="this.$router.history.current.path === '/'"
               >
@@ -39,7 +32,8 @@
               >
                 <span> ANÁLISE POR GRUPOS </span>
               </button>
-            </router-link>
+            </router-link> -->
+            <Nav :route="this.$router.history.current.path" />
           </nav>
         </div>
         <div class="right-content">
@@ -63,6 +57,13 @@
       </div>
     </header>
 
+    <div class="back-to-top" @click="scrollToTop">
+      <v-icon x-large color="var(--blue)">
+        mdi-arrow-up-bold-circle
+      </v-icon>
+      Voltar ao topo
+    </div>
+
     <section>
       <router-view
         :ipcaData="ipcaData"
@@ -73,14 +74,18 @@
         :error="error"
       />
     </section>
+    <footer><span>GEADV - 2020</span></footer>
   </v-app>
 </template>
 
 <script>
+import TopBar from './components/TopBar';
+import Nav from './components/Nav';
 import './app-styles.css';
 import '../src/styles/global.css';
 
 export default {
+  components: { TopBar, Nav },
   methods: {
     getDate() {
       const date = new Date();
@@ -125,6 +130,9 @@ export default {
       ];
       return groups;
     },
+    scrollToTop() {
+      window.scrollTo(0, 0);
+    },
   },
   data() {
     return {
@@ -138,7 +146,6 @@ export default {
       error: '',
     };
   },
-
   created() {
     // Na resolução da requisição à API, foram isolados em estados os dados dos meses disponíveis para consulta,
     // as variáveis do índice e os grupos de consulta existentes.

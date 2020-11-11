@@ -1,0 +1,38 @@
+.left-content .main-buttons {
+  background-color: var(--orange);
+  width: 20vw;
+  min-width: 10rem;
+  height: 5vw;
+  min-height: 4rem;
+  margin-top: 20px;
+  border-radius: 5px;
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  outline: none;
+  align-self: center;
+  line-height: 20px;
+  position: relative;
+  padding: 0 20px;
+}
+
+.left-content .main-buttons:hover {
+  background-color: var(--orange-hover-disabled);
+}
+
+.left-content .disabled:after {
+  content: '';
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-bottom: 30px solid transparent;
+  border-left: 30px solid var(--orange);
+  border-top-right-radius: 3px;
+  right: -20px;
+  top: 0;
+}
+
+.left-content .disabled:hover {
+  background-color: var(--orange);
+}

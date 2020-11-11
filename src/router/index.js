@@ -18,6 +18,7 @@ export default new Router({
       name: 'chart',
       path: '/chart',
       component: Chart,
+      props: true,
     },
   ],
 });

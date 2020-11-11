@@ -81,6 +81,9 @@ export default {
       return filteredData;
     },
   },
+  mounted() {
+    window.scrollTo(0, 380);
+  },
   data() {
     return {
       search: '',

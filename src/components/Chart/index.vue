@@ -38,29 +38,44 @@
       ></v-select>
     </div>
 
-    <a href="#data"
+    <a href="#teste"
       ><button @click="loadChart" class="btn" id="data">
         PESQUISAR
       </button></a
     >
+    <div v-if="!ipcaData.length && !errors">
+      <v-col class="subtitle-1 text-center" cols="12">
+        Carregando dados...
+      </v-col>
 
-    <div id="chart">
-      <strong>
-        {{ title.variationSelected }}
-      </strong>
-      <p>
-        {{ title.monthInitial }} -
-        {{ title.monthFinal }}
-      </p>
-      <p>{{ title.selectedGroup }}</p>
+      <v-progress-linear indeterminate color="yellow darken-2" />
     </div>
 
-    <apexchart
-      width="100%"
-      type="line"
-      :options="options"
-      :series="series"
-    ></apexchart>
+    <v-alert border="top" color="red lighten-2" dark v-if="errors">
+      {{ errors }}
+    </v-alert>
+
+    <div v-else class="column">
+      <div id="chart-title" v-if="title.monthInitial">
+        <strong>
+          {{ title.variationSelected }}
+        </strong>
+        <p>
+          {{ title.monthInitial }} -
+          {{ title.monthFinal }}
+        </p>
+        <p>{{ title.selectedGroup }}</p>
+      </div>
+
+      <apexchart
+        id="teste"
+        v-if="title.monthInitial"
+        width="100%"
+        type="line"
+        :options="options"
+        :series="series"
+      ></apexchart>
+    </div>
   </div>
 </template>
 
@@ -81,10 +96,20 @@ export default {
     'error',
   ],
   created() {
+    // if (this.ipcaData.length <= 0) {
+    //   this.$router.push('/');
+    //   return;
+    // }
+
+    console.log(this.periodSelected);
+
+    window.scrollTo(0, 380);
+
     this.loadChart();
   },
   data() {
     return {
+      errors: this.error,
       variationSelected: 'IPCA - Variação mensal',
       options: {
         chart: {
@@ -135,13 +160,18 @@ export default {
     foi a de realizar a invocação de um método dentro do método seguinte, preferindo performance que reusabilidade.*/
 
     loadChart: function() {
-      this.setDataToPlot();
-      this.title = {
-        variationSelected: this.variationSelected,
-        monthInitial: this.availableMonths[1],
-        monthFinal: this.availableMonths[0],
-        selectedGroup: this.selectedGroup,
-      };
+      this.errors = '';
+      try {
+        this.setDataToPlot();
+        this.title = {
+          variationSelected: this.variationSelected,
+          monthInitial: this.availableMonths[1],
+          monthFinal: this.availableMonths[0],
+          selectedGroup: this.selectedGroup,
+        };
+      } catch (err) {
+        this.errors = 'Selecione o período para pesquisar';
+      }
     },
     filterByVariation: function() {
       const filteredByVariation = this.ipcaData.filter(
