@@ -23,11 +23,6 @@
   background-color: #005079;
 }
 
-#select {
-  display: flex;
-  justify-content: space-between;
-}
-
 #chart {
   align-self: center;
   margin-top: 35px;

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <div class="top">
+    <div class="top-bar">
       <div class="logo">
         <router-link to="/">
           <img src="./assets/cef_neg.png" alt="Caixa Econômica" />
@@ -8,44 +8,44 @@
       </div>
     </div>
 
-    <div id="header">
-      <div class="header-elements">
-        <div class="header-left-content">
+    <header>
+      <div class="elements">
+        <div class="left-content">
           <h1>IPCA</h1>
           <h2>Consulta Histórico</h2>
-          <router-link to="/">
-            <button
-              :class="
-                this.$router.history.current.path === '/chart'
-                  ? 'main-buttons'
-                  : 'main-buttons disabled'
-              "
-              :disabled="this.$router.history.current.path === '/'"
-              @click="page = 'table'"
+          <nav class="column">
+            <router-link to="/">
+              <button
+                :class="
+                  this.$router.history.current.path === '/chart'
+                    ? 'main-buttons'
+                    : 'main-buttons disabled'
+                "
+                :disabled="this.$router.history.current.path === '/'"
+              >
+                <span> TABELA HISTÓRICA </span>
+              </button></router-link
             >
-              <span> TABELA HISTÓRICA </span>
-            </button></router-link
-          >
-          <router-link to="/chart">
-            <button
-              :class="
-                this.$router.history.current.path === '/'
-                  ? 'main-buttons'
-                  : 'main-buttons disabled'
-              "
-              :disabled="
-                this.$router.history.current.path === '/chart'
-              "
-              @click="page = 'chart'"
-            >
-              <span> ANÁLISE POR GRUPOS </span>
-            </button>
-          </router-link>
+            <router-link to="/chart">
+              <button
+                :class="
+                  this.$router.history.current.path === '/'
+                    ? 'main-buttons'
+                    : 'main-buttons disabled'
+                "
+                :disabled="
+                  this.$router.history.current.path === '/chart'
+                "
+              >
+                <span> ANÁLISE POR GRUPOS </span>
+              </button>
+            </router-link>
+          </nav>
         </div>
-        <div class="header-right-content">
+        <div class="right-content">
           <div class="title">
             <h6>Atualização</h6>
-            <p>{{ lastAtualizationDate }}</p>
+            <span>{{ lastAtualizationDate }}</span>
           </div>
 
           <div class="indexes">
@@ -55,23 +55,24 @@
               class="card"
               elevation="2"
             >
-              <span>{{ item.variavel }}</span>
+              <h3>{{ item.variavel }}</h3>
               <p>{{ item.serie }}</p>
             </v-card>
           </div>
         </div>
       </div>
-    </div>
+    </header>
 
-    <div class="content">
+    <section>
       <router-view
         :ipcaData="ipcaData"
-        :mesesDisponiveis="mesesDisponiveis"
-        :variaveis="variaveis"
+        :availableMonths="availableMonths"
+        :variations="variations"
         :groups="groups"
         :selectedDate="selectedDate"
+        :error="error"
       />
-    </div>
+    </section>
   </v-app>
 </template>
 
@@ -112,11 +113,11 @@ export default {
 
       return mesesUpper.reverse();
     },
-    getVariaveis() {
-      const variaveis = [
+    getVariations() {
+      const variations = [
         ...new Set(this.ipcaData.map(item => item.D2N)),
       ];
-      return variaveis;
+      return variations;
     },
     getGroups() {
       const groups = [
@@ -127,44 +128,55 @@ export default {
   },
   data() {
     return {
-      page: 'table',
       selectedDate: '',
-      variaveis: [],
-      mesesDisponiveis: [],
+      variations: [],
+      availableMonths: [],
       groups: [],
       ipcaData: [],
       indexes: [],
       lastAtualizationDate: '',
+      error: '',
     };
   },
 
   created() {
-    this.$http.get('/').then(res => {
-      this.ipcaData = res.data;
+    // Na resolução da requisição à API, foram isolados em estados os dados dos meses disponíveis para consulta,
+    // as variáveis do índice e os grupos de consulta existentes.
+    // Foram realizadas manipulações diretas nos arrays para retirada do primeiro objeto que contém dados informativos
 
-      let x = this.getMonths();
-      x.pop();
-      this.mesesDisponiveis = x;
-      this.selectedDate = this.mesesDisponiveis[0];
+    this.$http
+      .get('/')
+      .then(res => {
+        this.ipcaData = res.data;
 
-      x = this.getVariaveis();
-      x.shift();
-      this.variaveis = x;
+        let months = this.getMonths();
+        months.pop();
+        this.availableMonths = months;
+        this.selectedDate = this.availableMonths[0];
 
-      x = this.getGroups();
-      x.shift();
-      this.groups = x;
-    });
+        let variations = this.getVariations();
+        variations.shift();
+        this.variations = variations;
 
+        let groups = this.getGroups();
+        groups.shift();
+        this.groups = groups;
+      })
+      .catch(() => {
+        this.error = 'Ocorreu um erro. Tente novamente.';
+      });
+
+    // chamada ao método que retorna o último dia do mês anterior
     const date = this.getDate();
-    console.log(date);
+
+    // Utilização da API disponibilizada pelo IBGE com os dados do IPCA para 2020
     this.$http
       .get(
         `https://servicodados.ibge.gov.br/api/v3/agregados/7060/periodos/${date.year}${date.serializedMonth}/variaveis/63|69?localidades=N1[all]&classificacao=315[7169]`,
       )
       .then(res => {
         res.data.map(item => {
-          const dataIndice = {
+          const dataIndex = {
             variavel: item.variavel,
             serie:
               item.resultados[0].series[0].serie[
@@ -172,7 +184,7 @@ export default {
               ],
           };
 
-          this.indexes = [...this.indexes, dataIndice];
+          this.indexes = [...this.indexes, dataIndex];
         });
       });
   },

@@ -1,9 +1,9 @@
 <template>
   <div>
-    <div id="select">
+    <div class="flex space-between">
       <div class="select">
         <v-select
-          :items="mesesDisponiveis"
+          :items="availableMonths"
           filled
           label="Selecione mês inicial"
           v-model="periodSelected.monthInitial"
@@ -22,7 +22,7 @@
 
     <v-radio-group v-model="variationSelected" row>
       <v-radio
-        v-for="variavel in variaveis"
+        v-for="variavel in variations"
         :key="variavel"
         :label="variavel"
         :value="variavel"
@@ -39,7 +39,7 @@
     </div>
 
     <a href="#data"
-      ><button @click="getPeriodData" class="btn" id="data">
+      ><button @click="loadChart" class="btn" id="data">
         PESQUISAR
       </button></a
     >
@@ -54,7 +54,6 @@
       </p>
       <p>{{ selectedGroup }}</p>
     </div>
-    <!-- </div> -->
 
     <apexchart
       width="100%"
@@ -74,11 +73,17 @@ export default {
   components: {
     apexchart: VueApexCharts,
   },
-  props: ['ipcaData', 'mesesDisponiveis', 'variaveis', 'groups'],
+  props: [
+    'ipcaData',
+    'availableMonths',
+    'variations',
+    'groups',
+    'error',
+  ],
   created() {
-    this.periodSelected.monthInitial = this.mesesDisponiveis[1];
-    this.periodSelected.monthFinal = this.mesesDisponiveis[0];
-    this.getPeriodData();
+    this.periodSelected.monthInitial = this.availableMonths[1];
+    this.periodSelected.monthFinal = this.availableMonths[0];
+    this.loadChart();
   },
   data() {
     return {
@@ -109,55 +114,69 @@ export default {
   computed: {
     possibleFinalMonths: function() {
       if (this.periodSelected.monthInitial) {
-        const i = this.mesesDisponiveis.indexOf(
+        const i = this.availableMonths.indexOf(
           this.periodSelected.monthInitial,
         );
-        const finalMonths = this.mesesDisponiveis.slice(0, i);
+        const finalMonths = this.availableMonths.slice(0, i);
         return finalMonths;
       } else {
-        return this.mesesDisponiveis;
+        return this.availableMonths;
       }
     },
   },
   methods: {
-    verifyBlankFields: function() {
-      if (!this.periodSelected.initial) {
-        alert('Erro');
-      }
+    loadChart: function() {
+      this.filterByVariation();
+      this.filterByMonths();
+      this.filterByGroup();
+      this.setDataToPlot();
     },
-    getPeriodData: function() {
-      console.log(this.periodSelected);
-
+    filterByVariation: function() {
       const filteredByVariation = this.ipcaData.filter(
         item => item.D2N === this.variationSelected,
       );
 
-      const firstIndex = filteredByVariation.find(
+      return filteredByVariation;
+    },
+    filterByMonths: function() {
+      const filteredByVariation = this.filterByVariation();
+
+      const firstInitialMonthOccurrence = filteredByVariation.find(
         item =>
           item.D3N === this.periodSelected.monthInitial.toLowerCase(),
       );
 
-      const secondIndex = filteredByVariation.find(
+      const firstFinalMonthOccurence = filteredByVariation.find(
         item =>
           item.D3N === this.periodSelected.monthFinal.toLowerCase(),
       );
 
       this.periodSelected = {
         ...this.periodSelected,
-        initial: this.ipcaData.indexOf(firstIndex),
-        final: this.ipcaData.indexOf(secondIndex),
+        initial: this.ipcaData.indexOf(firstInitialMonthOccurrence),
+        final: this.ipcaData.indexOf(firstFinalMonthOccurence),
       };
 
-      const dataPeriod = this.ipcaData.slice(
+      const filteredByMonth = this.ipcaData.slice(
         this.periodSelected.initial,
         this.periodSelected.final + 10,
       );
 
-      const groupIndex = dataPeriod.filter(
+      return filteredByMonth;
+    },
+    filterByGroup: function() {
+      const filteredByMonth = this.filterByMonths();
+
+      const filteredByGroup = filteredByMonth.filter(
         item => item.D4N === this.selectedGroup,
       );
 
-      const monthsToPlot = groupIndex.map(item => item.D3N);
+      return filteredByGroup;
+    },
+    setDataToPlot: function() {
+      const filteredByGroup = this.filterByGroup();
+
+      const monthsToPlot = filteredByGroup.map(item => item.D3N);
       this.options = {
         chart: {
           id: 'vuechart-example',
@@ -167,7 +186,7 @@ export default {
         },
       };
 
-      const dataToPlot = groupIndex.map(item => item.V);
+      const dataToPlot = filteredByGroup.map(item => item.V);
 
       this.series = [
         {

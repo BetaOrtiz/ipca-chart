@@ -1,19 +1,25 @@
 <template>
   <div>
     <v-select
-      :items="mesesDisponiveis"
+      :items="availableMonths"
       filled
       label="Selecione mês"
       v-model="selectedDate"
     ></v-select>
 
-    <v-progress-linear
-      v-if="!ipcaData.length"
-      indeterminate
-      color="yellow darken-2"
-    ></v-progress-linear>
+    <div v-if="!ipcaData.length && !error">
+      <v-col class="subtitle-1 text-center" cols="12">
+        Carregando dados...
+      </v-col>
 
-    <template v-else>
+      <v-progress-linear indeterminate color="yellow darken-2" />
+    </div>
+
+    <v-alert border="top" color="red lighten-2" dark v-if="error">
+      {{ error }}
+    </v-alert>
+
+    <template v-if="ipcaData.length && !error">
       <div class="export-csv-button">
         <download-csv :data="filteredByMonth">
           <v-icon dark medium>
@@ -66,7 +72,7 @@
 import '../../styles/global.css';
 
 export default {
-  props: ['ipcaData', 'mesesDisponiveis', 'selectedDate'],
+  props: ['ipcaData', 'availableMonths', 'selectedDate', 'error'],
   computed: {
     filteredByMonth: function() {
       const filteredData = this.ipcaData.filter(
@@ -85,15 +91,15 @@ export default {
           align: 'center',
         },
         {
+          text: 'Grupos',
+          value: 'D4N',
+          align: 'start',
+        },
+        {
           text: 'Valor',
           value: 'V',
           align: 'center',
           groupable: false,
-        },
-        {
-          text: 'Grupos',
-          value: 'D4N',
-          align: 'start',
         },
       ],
     };
