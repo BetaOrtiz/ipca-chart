@@ -125,10 +125,12 @@ export default {
     },
   },
   methods: {
+    /*estes métodos filtram os dados retornados pela API de acordo com as opções selecionadas pelo usuário
+    embora fosse possível trabalhar o mesmo array inicial para cada filtro disponível ao usuário, visando menor acoplamento
+    entre eles, no longo prazo a tendência será que o retorno da API seja cada vez maior, portanto, a decisão tomada
+    foi a de realizar a invocação de um método dentro do método seguinte, preferindo performance que reusabilidade.*/
+
     loadChart: function() {
-      this.filterByVariation();
-      this.filterByMonths();
-      this.filterByGroup();
       this.setDataToPlot();
     },
     filterByVariation: function() {
