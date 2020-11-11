@@ -46,13 +46,13 @@
 
     <div id="chart">
       <strong>
-        {{ variationSelected }}
+        {{ title.variationSelected }}
       </strong>
       <p>
-        {{ periodSelected.monthInitial }} -
-        {{ periodSelected.monthFinal }}
+        {{ title.monthInitial }} -
+        {{ title.monthFinal }}
       </p>
-      <p>{{ selectedGroup }}</p>
+      <p>{{ title.selectedGroup }}</p>
     </div>
 
     <apexchart
@@ -81,8 +81,6 @@ export default {
     'error',
   ],
   created() {
-    this.periodSelected.monthInitial = this.availableMonths[1];
-    this.periodSelected.monthFinal = this.availableMonths[0];
     this.loadChart();
   },
   data() {
@@ -105,10 +103,16 @@ export default {
       periodSelected: {
         initial: '',
         final: '',
-        monthInitial: '',
-        monthFinal: '',
+        monthInitial: this.availableMonths[1],
+        monthFinal: this.availableMonths[0],
       },
       selectedGroup: 'Índice geral',
+      title: {
+        variationSelected: this.variationSelected,
+        monthInitial: this.availableMonths[1],
+        monthFinal: this.availableMonths[0],
+        selectedGroup: this.selectedGroup,
+      },
     };
   },
   computed: {
@@ -132,6 +136,12 @@ export default {
 
     loadChart: function() {
       this.setDataToPlot();
+      this.title = {
+        variationSelected: this.variationSelected,
+        monthInitial: this.availableMonths[1],
+        monthFinal: this.availableMonths[0],
+        selectedGroup: this.selectedGroup,
+      };
     },
     filterByVariation: function() {
       const filteredByVariation = this.ipcaData.filter(
@@ -148,7 +158,7 @@ export default {
           item.D3N === this.periodSelected.monthInitial.toLowerCase(),
       );
 
-      const firstFinalMonthOccurence = filteredByVariation.find(
+      const firstFinalMonthOccurence = filteredByVariation.filter(
         item =>
           item.D3N === this.periodSelected.monthFinal.toLowerCase(),
       );
@@ -156,12 +166,16 @@ export default {
       this.periodSelected = {
         ...this.periodSelected,
         initial: this.ipcaData.indexOf(firstInitialMonthOccurrence),
-        final: this.ipcaData.indexOf(firstFinalMonthOccurence),
+        final: this.ipcaData.indexOf(
+          firstFinalMonthOccurence[
+            firstFinalMonthOccurence.length - 1
+          ],
+        ),
       };
 
       const filteredByMonth = this.ipcaData.slice(
         this.periodSelected.initial,
-        this.periodSelected.final + 10,
+        this.periodSelected.final,
       );
 
       return filteredByMonth;
