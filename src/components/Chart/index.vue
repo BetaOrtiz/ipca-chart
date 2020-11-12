@@ -66,7 +66,7 @@
       </div>
 
       <apexchart
-        v-if="title.monthInitial"
+        v-if="selectedGroup.length"
         width="100%"
         type="line"
         :options="options"
