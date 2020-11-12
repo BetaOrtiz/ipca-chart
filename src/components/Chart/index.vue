@@ -29,20 +29,19 @@
       ></v-radio>
     </v-radio-group>
 
-    <div>
-      <v-select
-        :items="groups"
-        filled
-        label="Selecione o grupo"
-        v-model="selectedGroup"
-      ></v-select>
-    </div>
+    <v-select
+      v-model="selectedGroup"
+      :items="groups"
+      attach
+      chips
+      label="Grupos"
+      multiple
+    ></v-select>
 
-    <a href="#teste"
-      ><button @click="loadChart" class="btn" id="data">
-        PESQUISAR
-      </button></a
-    >
+    <button @click="loadChart" class="btn" id="data">
+      PESQUISAR
+    </button>
+
     <div v-if="!ipcaData.length && !errors">
       <v-col class="subtitle-1 text-center" cols="12">
         Carregando dados...
@@ -56,7 +55,7 @@
     </v-alert>
 
     <div v-else class="column">
-      <div id="chart-title" v-if="title.monthInitial">
+      <div id="chart-title" v-if="selectedGroup.length">
         <strong>
           {{ title.variationSelected }}
         </strong>
@@ -64,11 +63,9 @@
           {{ title.monthInitial }} -
           {{ title.monthFinal }}
         </p>
-        <p>{{ title.selectedGroup }}</p>
       </div>
 
       <apexchart
-        id="teste"
         v-if="title.monthInitial"
         width="100%"
         type="line"
@@ -101,8 +98,6 @@ export default {
     //   return;
     // }
 
-    console.log(this.periodSelected);
-
     window.scrollTo(0, 380);
 
     this.loadChart();
@@ -131,7 +126,7 @@ export default {
         monthInitial: this.availableMonths[1],
         monthFinal: this.availableMonths[0],
       },
-      selectedGroup: 'Índice geral',
+      selectedGroup: [],
       title: {
         variationSelected: this.variationSelected,
         monthInitial: this.availableMonths[1],
@@ -160,7 +155,9 @@ export default {
     foi a de realizar a invocação de um método dentro do método seguinte, preferindo performance que reusabilidade.*/
 
     loadChart: function() {
+      window.scrollTo(0, 750);
       this.errors = '';
+      this.series = [];
       try {
         this.setDataToPlot();
         this.title = {
@@ -208,38 +205,55 @@ export default {
         this.periodSelected.final,
       );
 
+      console.log(filteredByMonth);
+
       return filteredByMonth;
     },
     filterByGroup: function() {
       const filteredByMonth = this.filterByMonths();
 
-      const filteredByGroup = filteredByMonth.filter(
-        item => item.D4N === this.selectedGroup,
+      const filteredByGroup = this.selectedGroup.map(item =>
+        filteredByMonth.filter(x => x.D4N === item),
       );
+
+      // const filteredByGroup = filteredByMonth.filter(
+      //   item => item.D4N === this.selectedGroup,
+      // );
+
+      //console.log(filteredByGroup);
 
       return filteredByGroup;
     },
     setDataToPlot: function() {
       const filteredByGroup = this.filterByGroup();
 
-      const monthsToPlot = filteredByGroup.map(item => item.D3N);
+      //const monthsToPlot
+
+      const monthsToPlot = filteredByGroup.map(item =>
+        item.map(element => element.D3N),
+      );
+
+      console.log(monthsToPlot[0]);
+
       this.options = {
         chart: {
           id: 'vuechart-example',
         },
         xaxis: {
-          categories: monthsToPlot,
+          categories: monthsToPlot[0],
         },
       };
 
-      const dataToPlot = filteredByGroup.map(item => item.V);
+      filteredByGroup.forEach(group => {
+        const objToPlot = {};
+        objToPlot.name = group[0].D4N;
 
-      this.series = [
-        {
-          name: 'Valor',
-          data: dataToPlot,
-        },
-      ];
+        let data = [];
+        group.forEach(item => data.push(item.V));
+        objToPlot.data = data;
+
+        this.series.push(objToPlot);
+      });
     },
   },
 };
